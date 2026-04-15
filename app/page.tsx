@@ -1,20 +1,36 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export default function Page() {
   return (
-    <div className="flex min-h-screen p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button asChild className="mt-2">
-            <Link href="/medications">Open medication schedule</Link>
-          </Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
+    <div className="flex min-h-screen bg-background p-6">
+      <div className="mx-auto flex max-w-6xl min-w-0 flex-col gap-4 text-sm leading-loose">
+        <div className="mx-auto flex flex-col justify-center gap-2">
+          <div className="flex space-y-4 rounded-3xl border border-border bg-card/90 p-6 shadow-sm">
+            <div className="space-y-2">
+              <p className="text-sm font-medium tracking-[0.3em] text-muted-foreground uppercase">
+                Home
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                My cat's medication schedule
+              </h1>
+            </div>
+          </div>
+          <Image
+            src="/muggle.JPEG"
+            alt="A cute cat"
+            width={400}
+            height={400}
+            className="rounded-3xl border border-border bg-card/90 p-6 shadow-sm"
+          />
+          <Image
+            src="/peeves.JPEG"
+            alt="A cute cat"
+            width={400}
+            height={400}
+            className="rounded-3xl border border-border bg-card/90 p-6 shadow-sm"
+          />
         </div>
       </div>
     </div>
