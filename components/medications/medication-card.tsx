@@ -15,19 +15,21 @@ import {
 import * as React from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "../ui/button"
-import { format } from "date-fns"
 
 export default function MedicationCard() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
-  const [dateOpen, setDateOpen] = React.useState(false)
+  const [mobileDateOpen, setMobileDateOpen] = React.useState(false)
+  const [desktopDateOpen, setDesktopDateOpen] = React.useState(false)
 
   return (
     <div>
       <div className="mb-2 flex justify-between">
-        <div className="flex h-fit w-fit flex-none gap-2 rounded-3xl border border-border bg-card/90 p-3 shadow-sm md:hidden">
-          <Popover open={dateOpen} onOpenChange={setDateOpen}>
+        <div className="flex h-fit w-fit flex-none gap-2 rounded-3xl border border-border bg-card/90 shadow-sm md:hidden">
+          <Popover open={mobileDateOpen} onOpenChange={setMobileDateOpen}>
             <PopoverTrigger asChild>
-              <CalendarIcon id="date" className="h-6 w-6" />
+              <Button id="date" type="button" variant="outline" size="icon">
+                <CalendarIcon className="h-6 w-6" />
+              </Button>
             </PopoverTrigger>
             <PopoverContent>
               <Calendar
@@ -35,7 +37,7 @@ export default function MedicationCard() {
                 selected={date}
                 onSelect={(date) => {
                   setDate(date)
-                  setDateOpen(false)
+                  setMobileDateOpen(false)
                 }}
                 defaultMonth={date}
               />
@@ -61,11 +63,16 @@ export default function MedicationCard() {
           </div>
         </div>
         <div className="hidden flex-none gap-2 md:flex">
-          <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
-            <Popover open={dateOpen} onOpenChange={setDateOpen}>
+          <div>
+            <Popover open={desktopDateOpen} onOpenChange={setDesktopDateOpen}>
               <PopoverTrigger asChild>
-                <Button id="dateFrom" type="button" variant="outline">
-                  <CalendarIcon id="date" className="h-6 w-6" />
+                <Button
+                  id="dateFrom"
+                  type="button"
+                  variant="outline"
+                  className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
+                >
+                  <CalendarIcon id="date" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent>
@@ -74,7 +81,7 @@ export default function MedicationCard() {
                   selected={date}
                   onSelect={(date) => {
                     setDate(date)
-                    setDateOpen(false)
+                    setDesktopDateOpen(false)
                   }}
                   defaultMonth={date}
                 />
