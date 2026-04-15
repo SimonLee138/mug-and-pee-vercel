@@ -4,8 +4,9 @@ import { sql } from "@/lib/db"
 import { Medicine, Patient, PatientRecord } from "./definitions"
 
 interface MedicationPayload {
-  patient_id: string
-  medicine_id: string
+  id: number
+  patient_id: number
+  medicine_id: number
   date_from: string
   date_to: string
   dose: string
@@ -38,11 +39,18 @@ export async function getPatients() {
 export async function getPatientRecords() {
   try {
     const rows =
-      (await sql`select p.id as patient_id, p.name as patient_name, m.id as medicine_id, m.name as medicine_name, 
-      ms.time_label as time, ms.dose as dose, ms.quantity as quantity, ms.quantity_unit as quantity_unit, ms.taken_times as taken_times from medication_schedule ms 
+      (await sql`select ms.id as id, p.id as patient_id, p.name as patient_name, m.id as medicine_id, m.name as medicine_name, 
+      ms.time_label as time, ms.dose as dose, ms.quantity as quantity, ms.quantity_unit as quantity_unit, ms.taken_times as taken_times 
+      from medication_schedule ms 
       join medicine m on ms.medicine_id = m.id
       join patient p on ms.patient_id = p.id
-      where start_date <= CURRENT_DATE and end_date >= CURRENT_DATE`) as PatientRecord[]
+      where start_date <= CURRENT_DATE and end_date >= CURRENT_DATE order by 
+      case
+        when ms.time_label = 'All Day' then 1
+        when ms.time_label = 'Morning' then 2
+        when ms.time_label = 'Evening' then 3
+        else 4
+        end asc`) as PatientRecord[]
     return rows
   } catch (error) {
     console.error("Error fetching patient records:", error)
@@ -70,9 +78,29 @@ export async function createMedicationRecord(
       date_to: end_date,
     } = payload as MedicationPayload
 
-    await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
-    VALUES (${patient_id}, ${medicine_id}, ${timeslots.join(",")}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
+    timeslots.forEach(async (time) => {
+      await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
+      VALUES (${patient_id}, ${medicine_id}, ${time}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
+    })
+    
   } catch (error) {
     console.error("Error creating medication record:", error)
+  }
+}
+
+export async function updateMedicationCount(recordId: number, newCount: number): Promise<void> {
+  try {
+    console.log(`Updating record ${recordId} with new count: ${newCount}`)
+    await sql`UPDATE medication_schedule SET taken_times = ${newCount} WHERE id = ${recordId}`
+  } catch (error) {
+    console.error("Error updating medication count:", error)
+  }
+}
+
+export async function deleteMedicationRecord(recordId: number): Promise<void> {
+  try {
+    await sql`DELETE FROM medication_schedule WHERE id = ${recordId}`
+  } catch (error) {
+    console.error("Error deleting medication record:", error)
   }
 }

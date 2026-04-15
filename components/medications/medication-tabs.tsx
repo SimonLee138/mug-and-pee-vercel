@@ -1,15 +1,21 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PatientRecord, TimeLabel } from "@/lib/definitions"
 import { Toggle } from "../ui/toggle"
 import { Pill } from "lucide-react"
+import { getPatientRecords, updateMedicationCount } from "@/lib/actions"
+import { useState } from "react"
 
 type PatientTabRecord = {
-  id: string
+  record_id: number
+  id: number
   name: string
   description: string
   summary: string
   medicines: Array<{
+    record_id: number
     id: number
     name: string
     dose: string
@@ -53,13 +59,25 @@ export default function MedicationTabs({
 }: {
   patientRecords: PatientRecord[]
 }) {
+  const [takenCounts, setTakenCounts] = useState<Record<number, number>>({})
+
+  const handleToggleMedicine = async (recordId: number, currentCount: number, pressed: boolean) => {
+    const newCount = pressed ? currentCount + 1 : Math.max(0, currentCount - 1)
+    setTakenCounts(prev => ({
+      ...prev,
+      [recordId]: newCount
+    }))
+    await updateMedicationCount(recordId, newCount)
+  }
+
   const uniquePatientRecords = Object.values(
     patientRecords.reduce<Record<number, PatientTabRecord>>((acc, record) => {
       const key = record.patient_id
 
       if (!acc[key]) {
         acc[key] = {
-          id: String(record.patient_id),
+          record_id: record.id,
+          id: record.patient_id,
           name: record.patient_name,
           description: "",
           summary: "Today's medication schedule.",
@@ -67,33 +85,20 @@ export default function MedicationTabs({
         }
       }
 
-      record.time.split(",").forEach((time) => {
-        acc[key].medicines.push({
-          id: record.medicine_id,
-          name: record.medicine_name,
-          dose: record.dose,
-          quantity: record.quantity,
-          quantity_unit: record.quantity_unit,
-          time: normalizeTimeLabel(time.trim()),
-          taken_times: record.taken_times,
-        })
+      acc[key].medicines.push({
+        record_id: record.id,
+        id: record.medicine_id,
+        name: record.medicine_name,
+        dose: record.dose,
+        quantity: record.quantity,
+        quantity_unit: record.quantity_unit,
+        time: normalizeTimeLabel(record.time),
+        taken_times: record.taken_times,
       })
 
       return acc
     }, {})
-  ).map((patient) => ({
-    ...patient,
-    medicines: [...patient.medicines].sort((a, b) => {
-      const aOrder = TIME_ORDER[a.time.toLowerCase().replace(/\s+/g, "")] ?? 99
-      const bOrder = TIME_ORDER[b.time.toLowerCase().replace(/\s+/g, "")] ?? 99
-
-      if (aOrder !== bOrder) {
-        return aOrder - bOrder
-      }
-
-      return a.name.localeCompare(b.name)
-    }),
-  }))
+  )
 
   if (uniquePatientRecords.length === 0) {
     return (
@@ -104,10 +109,10 @@ export default function MedicationTabs({
       </section>
     )
   }
-
+  console.log("Unique patient records:", uniquePatientRecords)
   return (
     <Tabs
-      defaultValue={uniquePatientRecords[0].id}
+      defaultValue={String(uniquePatientRecords[0].id)}
       className="flex-col gap-4"
       orientation="vertical"
     >
@@ -115,7 +120,7 @@ export default function MedicationTabs({
         {uniquePatientRecords.map((patient) => (
           <TabsTrigger
             key={patient.id}
-            value={patient.id}
+            value={String(patient.id)}
             className="min-h-[56px] w-full flex-col gap-1 rounded-3xl px-4 py-3 text-left group-data-vertical/tabs:justify-center md:w-auto"
           >
             <span className="text-sm font-semibold text-foreground">
@@ -130,7 +135,7 @@ export default function MedicationTabs({
       </TabsList>
 
       {uniquePatientRecords.map((patient) => (
-        <TabsContent key={patient.id} value={patient.id} className="space-y-6">
+        <TabsContent key={patient.id} value={String(patient.id)} className="space-y-6">
           <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
             <div className="rounded-3xl border border-border bg-card/90 p-6 shadow-sm">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
@@ -207,13 +212,21 @@ export default function MedicationTabs({
                     </span>{" "}
                     {medicine.quantity} {medicine.quantity_unit}
                   </p>
-                  {Array.from({ length: medicine.quantity }).map((_, index) => (
-                    <Toggle key={index} aria-label="Toggle medicine taken" variant="outline">
-                      <Pill className="mr-2 h-4 w-4 group-data-[state=on]/toggle:fill-foreground" />
-                      Taken
-                    </Toggle>
-                  )
-                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: medicine.quantity }).map((_, index) => (
+                      <Toggle 
+                        key={index} 
+                        aria-label="Toggle medicine taken" 
+                        variant="outline"
+                        pressed={index < (takenCounts[medicine.record_id] ?? medicine.taken_times)}
+                        onPressedChange={(pressed) => handleToggleMedicine(medicine.record_id, takenCounts[medicine.record_id] ?? medicine.taken_times, pressed)}
+                      >
+                        <Pill className="mr-2 h-4 w-4 group-data-[state=on]/toggle:fill-foreground" />
+                        Taken
+                      </Toggle>
+                    )
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

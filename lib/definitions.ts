@@ -17,7 +17,7 @@ export type Patient = {
 export type TimeLabel = "Morning" | "Evening" | "All Day"
 
 export type PatientRecord = {
-  id: string
+  id: number
   patient_id: number
   patient_name: string
   medicine_id: number
