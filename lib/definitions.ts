@@ -18,14 +18,15 @@ export type TimeLabel = "Morning" | "Evening" | "All Day"
 
 export type PatientRecord = {
   id: string
-  current_date: Date
   patient_id: number
   patient_name: string
   medicine_id: number
   medicine_name: string
   time: TimeLabel
   dose: string
-  count: string
+  quantity: number
+  quantity_unit: string
+  taken_times: number
 }
 
 export type MedicationScheduleEntry = {

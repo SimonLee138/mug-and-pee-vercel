@@ -5,13 +5,14 @@ import { Medicine, Patient, PatientRecord } from "./definitions"
 
 interface MedicationPayload {
   patient_id: string
-  medication_id: string
+  medicine_id: string
   date_from: string
   date_to: string
   dose: string
-  quantity: string
+  quantity: number
+  quantity_unit: string
   timeComboBox: string[]
-  [key: string]: string | string[] // fallback for other fields
+  [key: string]: string | string[] | number // fallback for other fields
 }
 
 export async function getMedicines() {
@@ -38,7 +39,7 @@ export async function getPatientRecords() {
   try {
     const rows =
       (await sql`select p.id as patient_id, p.name as patient_name, m.id as medicine_id, m.name as medicine_name, 
-      ms.time_label as time, ms.dose as dose, ms.quantity_text as count, CURRENT_DATE from medication_schedule ms 
+      ms.time_label as time, ms.dose as dose, ms.quantity as quantity, ms.quantity_unit as quantity_unit, ms.taken_times as taken_times from medication_schedule ms 
       join medicine m on ms.medicine_id = m.id
       join patient p on ms.patient_id = p.id
       where start_date <= CURRENT_DATE and end_date >= CURRENT_DATE`) as PatientRecord[]
@@ -63,13 +64,14 @@ export async function createMedicationRecord(
       medicine_id: medicine_id,
       timeComboBox: timeslots,
       dose: dose,
-      quantity: quantity_text,
+      quantity: quantity,
+      quantity_unit: quantity_unit,
       date_from: start_date,
       date_to: end_date,
     } = payload as MedicationPayload
 
-    await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity_text, start_date, end_date) 
-    VALUES (${patient_id}, ${medicine_id}, ${timeslots.join(",")}, ${dose}, ${quantity_text}, ${start_date}, ${end_date})`
+    await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
+    VALUES (${patient_id}, ${medicine_id}, ${timeslots.join(",")}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
   } catch (error) {
     console.error("Error creating medication record:", error)
   }

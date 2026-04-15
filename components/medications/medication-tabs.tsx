@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PatientRecord, TimeLabel } from "@/lib/definitions"
+import { Toggle } from "../ui/toggle"
+import { Pill } from "lucide-react"
 
 type PatientTabRecord = {
   id: string
@@ -11,8 +13,10 @@ type PatientTabRecord = {
     id: number
     name: string
     dose: string
-    count: string
+    quantity: number
+    quantity_unit: string
     time: TimeLabel
+    taken_times: number
   }>
 }
 
@@ -68,8 +72,10 @@ export default function MedicationTabs({
           id: record.medicine_id,
           name: record.medicine_name,
           dose: record.dose,
-          count: record.count,
+          quantity: record.quantity,
+          quantity_unit: record.quantity_unit,
           time: normalizeTimeLabel(time.trim()),
+          taken_times: record.taken_times,
         })
       })
 
@@ -199,8 +205,15 @@ export default function MedicationTabs({
                     <span className="font-semibold text-foreground">
                       Count:
                     </span>{" "}
-                    {medicine.count}
+                    {medicine.quantity} {medicine.quantity_unit}
                   </p>
+                  {Array.from({ length: medicine.quantity }).map((_, index) => (
+                    <Toggle key={index} aria-label="Toggle medicine taken" variant="outline">
+                      <Pill className="mr-2 h-4 w-4 group-data-[state=on]/toggle:fill-foreground" />
+                      Taken
+                    </Toggle>
+                  )
+                  )}
                 </div>
               </div>
             ))}
