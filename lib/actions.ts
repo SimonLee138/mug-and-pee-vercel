@@ -26,6 +26,17 @@ export async function getMedicines() {
   }
 }
 
+export async function getMedicineById(id: number) {
+  try {
+    const rows =
+      (await sql`SELECT * FROM medicine WHERE id = ${id}`) as Medicine[]
+    return rows[0] || null
+  } catch (error) {
+    console.error(`Error fetching medicine with id ${id}:`, error)
+    return null
+  }
+}
+
 export async function getPatients() {
   try {
     const rows = (await sql`SELECT * FROM patient`) as Patient[]
@@ -82,13 +93,15 @@ export async function createMedicationRecord(
       await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
       VALUES (${patient_id}, ${medicine_id}, ${time}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
     })
-    
   } catch (error) {
     console.error("Error creating medication record:", error)
   }
 }
 
-export async function updateMedicationCount(recordId: number, newCount: number): Promise<void> {
+export async function updateMedicationCount(
+  recordId: number,
+  newCount: number
+): Promise<void> {
   try {
     console.log(`Updating record ${recordId} with new count: ${newCount}`)
     await sql`UPDATE medication_schedule SET taken_times = ${newCount} WHERE id = ${recordId}`
@@ -102,5 +115,52 @@ export async function deleteMedicationRecord(recordId: number): Promise<void> {
     await sql`DELETE FROM medication_schedule WHERE id = ${recordId}`
   } catch (error) {
     console.error("Error deleting medication record:", error)
+  }
+}
+
+export async function createMedicine(formData: FormData): Promise<void> {
+  try {
+    const payload = {
+      ...Object.fromEntries(formData.entries()),
+      timeComboBox: formData.getAll("timeComboBox"),
+    }
+
+    const {
+      patient_id: patient_id,
+      medicine_id: medicine_id,
+      timeComboBox: timeslots,
+      dose: dose,
+      quantity: quantity,
+      quantity_unit: quantity_unit,
+      date_from: start_date,
+      date_to: end_date,
+    } = payload as MedicationPayload
+
+    timeslots.forEach(async (time) => {
+      await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
+      VALUES (${patient_id}, ${medicine_id}, ${time}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
+    })
+  } catch (error) {
+    console.error("Error creating medicine:", error)
+  }
+}
+
+export async function updateMedicine(
+  recordId: number,
+  newCount: number
+): Promise<void> {
+  try {
+    console.log(`Updating record ${recordId} with new count: ${newCount}`)
+    await sql`UPDATE medication_schedule SET taken_times = ${newCount} WHERE id = ${recordId}`
+  } catch (error) {
+    console.error("Error updating medicine:", error)
+  }
+}
+
+export async function deleteMedicine(recordId: number): Promise<void> {
+  try {
+    await sql`DELETE FROM medication_schedule WHERE id = ${recordId}`
+  } catch (error) {
+    console.error("Error deleting medicine:", error)
   }
 }
