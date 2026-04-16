@@ -45,7 +45,11 @@ export default function MedicationCard() {
           </Popover>
         </div>
         <div className="flex h-fit w-fit flex-none gap-2 rounded-3xl border border-border bg-card/90 p-3 shadow-sm md:hidden">
-          <Plus className="h-6 w-6" />
+          <Link
+            href="/medications/create"
+          >
+            <Plus className="h-6 w-6" />
+          </Link>
           <PencilLine className="h-6 w-6" />
           <Trash2 className="h-6 w-6" />
         </div>

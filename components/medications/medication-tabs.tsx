@@ -179,7 +179,7 @@ export default function MedicationTabs({
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {patient.medicines.map((medicine) => (
               <div
-                key={`${medicine.id}-${medicine.time}`}
+                key={`${medicine.record_id}-${medicine.id}-${medicine.time}`}
                 className="rounded-3xl border border-border bg-card/90 p-5 shadow-sm transition hover:-translate-y-0.5"
               >
                 <div className="flex items-center justify-between gap-4">
