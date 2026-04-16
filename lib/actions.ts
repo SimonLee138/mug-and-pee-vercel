@@ -16,6 +16,15 @@ interface MedicationPayload {
   [key: string]: string | string[] | number // fallback for other fields
 }
 
+interface MedicinePayload {
+  id: number
+  name: string
+  description: string
+  dose: string
+  childMedicines: number[]
+  [key: string]: string | number[] | number // fallback for other fields
+}
+
 export async function getMedicines() {
   try {
     const rows = (await sql`SELECT * FROM medicine`) as Medicine[]
@@ -122,23 +131,23 @@ export async function createMedicine(formData: FormData): Promise<void> {
   try {
     const payload = {
       ...Object.fromEntries(formData.entries()),
-      timeComboBox: formData.getAll("timeComboBox"),
+      childMedicines: formData.getAll("childMedicines").map(Number),
     }
 
     const {
       patient_id: patient_id,
       medicine_id: medicine_id,
-      timeComboBox: timeslots,
+      childMedicines: childMedicines,
       dose: dose,
       quantity: quantity,
       quantity_unit: quantity_unit,
       date_from: start_date,
       date_to: end_date,
-    } = payload as MedicationPayload
+    } = payload as MedicinePayload
 
-    timeslots.forEach(async (time) => {
-      await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
-      VALUES (${patient_id}, ${medicine_id}, ${time}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
+    childMedicines.forEach(async (childMedicineId) => {
+      await sql`INSERT INTO medicine (name, description, dose) 
+      VALUES (${patient_id}, ${medicine_id}, ${childMedicineId}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
     })
   } catch (error) {
     console.error("Error creating medicine:", error)
