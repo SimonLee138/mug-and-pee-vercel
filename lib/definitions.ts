@@ -3,6 +3,7 @@ export type Medicine = {
   created_at: Date
   name: string
   description: string
+  dose: string
 }
 
 export type Patient = {
