@@ -155,12 +155,22 @@ export async function createMedicine(formData: FormData): Promise<void> {
 }
 
 export async function updateMedicine(
-  recordId: number,
-  newCount: number
+  id: number,
+  formData: FormData
 ): Promise<void> {
   try {
-    console.log(`Updating record ${recordId} with new count: ${newCount}`)
-    await sql`UPDATE medication_schedule SET taken_times = ${newCount} WHERE id = ${recordId}`
+    const payload = {
+      ...Object.fromEntries(formData.entries()),
+    }
+
+    const {
+      name,
+      description,
+      dose,
+    } = payload as MedicinePayload
+
+    console.log(`Updating medicine with id: ${id}`)
+    await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
   } catch (error) {
     console.error("Error updating medicine:", error)
   }

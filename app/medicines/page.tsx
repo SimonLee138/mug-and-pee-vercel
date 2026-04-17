@@ -29,7 +29,7 @@ export default async function Page() {
 
       <div className="flex w-full items-center justify-end">
         <Link
-          href="/medications/create"
+          href="/medicines/create"
           className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
         >
           <Plus className="h-4 w-4" />
