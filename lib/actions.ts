@@ -135,19 +135,19 @@ export async function createMedicine(formData: FormData): Promise<void> {
     }
 
     const {
-      patient_id: patient_id,
-      medicine_id: medicine_id,
+      name: name,
+      description: description,
       childMedicines: childMedicines,
       dose: dose,
-      quantity: quantity,
-      quantity_unit: quantity_unit,
-      date_from: start_date,
-      date_to: end_date,
     } = payload as MedicinePayload
 
+    const result = await sql`INSERT INTO medicine (name, description, dose) 
+      VALUES (${name}, ${description}, ${dose}) returning id`
+    const medicineId = result[0]?.id
+    console.log(childMedicines)
     childMedicines.forEach(async (childMedicineId) => {
-      await sql`INSERT INTO medicine (name, description, dose) 
-      VALUES (${patient_id}, ${medicine_id}, ${childMedicineId}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
+      await sql`INSERT INTO medicine_child_medicines (medicine_id, child_id, created_date) 
+      VALUES (${medicineId}, ${childMedicineId}, NOW())`
     })
   } catch (error) {
     console.error("Error creating medicine:", error)
@@ -161,16 +161,19 @@ export async function updateMedicine(
   try {
     const payload = {
       ...Object.fromEntries(formData.entries()),
+      childMedicines: formData.getAll("childMedicines").map(Number),
     }
 
     const {
       name,
       description,
       dose,
+
     } = payload as MedicinePayload
 
     console.log(`Updating medicine with id: ${id}`)
-    await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
+    console.log(`New values - Name: ${name}, Description: ${description}, Dose: ${dose}`) 
+    //await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
   } catch (error) {
     console.error("Error updating medicine:", error)
   }

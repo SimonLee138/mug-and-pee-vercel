@@ -95,9 +95,9 @@ export default function MedicineForm({
                 </label>
                 <Input
                   type="text"
-                  id="medicine"
-                  name="medicine"
-                  value={medicine ? medicine.name : ""}
+                  id="name"
+                  name="name"
+                  defaultValue={medicine ? medicine.name : ""}
                   className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
@@ -112,7 +112,7 @@ export default function MedicineForm({
                   type="text"
                   id="description"
                   name="description"
-                  value={medicine ? medicine.description : ""}
+                  defaultValue={medicine ? medicine.description : ""}
                   className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
@@ -127,16 +127,16 @@ export default function MedicineForm({
                   type="text"
                   id="dose"
                   name="dose"
-                  value={medicine ? medicine.dose : ""}
+                  defaultValue={medicine ? medicine.dose : ""}
                   className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
               <div className="grid gap-2">
-                <label htmlFor="timeComboBox">Content:</label>
+                <label htmlFor="childMedicines">Content:</label>
                 <Combobox
                   multiple
                   autoHighlight
-                  name="timeComboBox"
+                  name="childMedicines"
                   required
                   items={medicineList}
                 >
@@ -145,7 +145,10 @@ export default function MedicineForm({
                       {(values) => (
                         <React.Fragment>
                           {values.map((value: string) => (
-                            <ComboboxChip key={value}>{value}</ComboboxChip>
+                            <ComboboxChip key={value}>
+                              {medicineList.find((item) => String(item.id) === value)
+                                ?.name ?? value}
+                            </ComboboxChip>
                           ))}
                           <ComboboxInput className="h-8 w-full border-0 bg-transparent px-1 text-sm ring-0 focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50" />
                         </React.Fragment>
@@ -156,7 +159,7 @@ export default function MedicineForm({
                     <ComboboxEmpty>No time found.</ComboboxEmpty>
                     <ComboboxList>
                       {medicineList.map((medicine) => (
-                        <ComboboxItem key={medicine.id} value={medicine.name}>
+                        <ComboboxItem key={medicine.id} value={String(medicine.id)}>
                           {medicine.name}
                         </ComboboxItem>
                       ))}

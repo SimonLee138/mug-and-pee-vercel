@@ -6,6 +6,13 @@ export type Medicine = {
   dose: string
 }
 
+export type MedicineChildMedicines = {
+  id: number
+  medicine_id: number
+  child_id: number
+  created_date: Date
+}
+
 export type Patient = {
   id: number
   name: string

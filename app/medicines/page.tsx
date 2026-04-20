@@ -61,6 +61,15 @@ export default async function Page() {
               <p className="text-sm text-muted-foreground">
                 Dose: {medicine.dose}
               </p>
+              
+              <div className="grid gap-2">
+                <label
+                  htmlFor="contents"
+                  className="text-sm text-muted-foreground"
+                >
+                  Contents:
+                </label>
+              </div>
             </CardContent>
           </Card>
         ))}
