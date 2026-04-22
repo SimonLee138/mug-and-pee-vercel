@@ -32,10 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  createMedicationRecord,
   createMedicine,
   getMedicines,
-  getPatients,
   updateMedicine,
 } from "@/lib/actions"
 import { Medicine, Patient } from "@/lib/definitions"
@@ -50,11 +48,9 @@ export default function MedicineForm({
 }) {
   const router = useRouter()
   const anchor = useComboboxAnchor()
-  const [patients, setPatients] = React.useState<Patient[]>([])
   const [medicineList, setMedicineList] = React.useState<Medicine[]>([])
 
   React.useEffect(() => {
-    getPatients().then(setPatients)
     getMedicines().then(setMedicineList)
   }, [])
 

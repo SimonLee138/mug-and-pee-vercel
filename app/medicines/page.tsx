@@ -1,17 +1,16 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { getMedicines } from "@/lib/actions"
-import { PencilLine, Plus } from "lucide-react"
-import Link from "next/link"
+import MedicineCard from "@/components/medicines/medicine-card"
+import { getMedicineChildMedicines, getMedicines } from "@/lib/actions"
 
 export default async function Page() {
   const medicines = await getMedicines()
+  const getMedicineChildren = await getMedicineChildMedicines()
+  const medicinesWithChildren = medicines.map((medicine) => ({
+    ...medicine,
+    childMedicines: getMedicineChildren.filter(
+      (child) => child.parent_id === medicine.id
+    ),
+  }))
+  console.log("Medicines with children:", medicinesWithChildren)
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 bg-background px-6 py-8">
       <section className="flex space-y-4 rounded-3xl border border-border bg-card/90 p-6 shadow-sm">
@@ -27,53 +26,7 @@ export default async function Page() {
         </div>
       </section>
 
-      <div className="flex w-full items-center justify-end">
-        <Link
-          href="/medicines/create"
-          className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
-        {medicines.map((medicine) => (
-          <Card
-            id={`medicine-${medicine.id}`}
-            key={medicine.id}
-            className="col-span-1 md:col-span-2"
-          >
-            <CardHeader>
-              <CardTitle>{medicine.name}</CardTitle>
-              <CardDescription>{medicine.description}</CardDescription>
-              <CardAction>
-                <Link
-                  href={`/medicines/${medicine.id}`}
-                  className="text-sm hover:underline"
-                >
-                  <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
-                    <PencilLine className="h-4 w-4" />
-                  </div>
-                </Link>
-              </CardAction>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Dose: {medicine.dose}
-              </p>
-              
-              <div className="grid gap-2">
-                <label
-                  htmlFor="contents"
-                  className="text-sm text-muted-foreground"
-                >
-                  Contents:
-                </label>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <MedicineCard medicines={medicinesWithChildren} />
     </div>
   )
 }

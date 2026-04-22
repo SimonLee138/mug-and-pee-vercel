@@ -1,7 +1,7 @@
 "use server"
 
 import { sql } from "@/lib/db"
-import { Medicine, Patient, PatientRecord } from "./definitions"
+import { ChildMedicine, Medicine, Patient, PatientRecord } from "./definitions"
 
 interface MedicationPayload {
   id: number
@@ -184,5 +184,29 @@ export async function deleteMedicine(recordId: number): Promise<void> {
     await sql`DELETE FROM medication_schedule WHERE id = ${recordId}`
   } catch (error) {
     console.error("Error deleting medicine:", error)
+  }
+}
+
+export async function getMedicineChildMedicines(): Promise<ChildMedicine[]> {
+  try {
+    const rows = await sql`
+      SELECT mcm.medicine_id as parent_id, m.* FROM medicine_child_medicines mcm
+      JOIN medicine m ON mcm.child_id = m.id
+    `
+    return rows as ChildMedicine[]
+  } catch (error) {
+    console.error("Error fetching child medicines:", error)
+    return []
+  }
+}
+
+export async function getMedicinesByIds(ids: number[]): Promise<Medicine[]> {
+  try {
+    if (ids.length === 0) return []
+    const rows = await sql`SELECT * FROM medicine WHERE id IN (${ids})`
+    return rows as Medicine[]
+  } catch (error) {
+    console.error("Error fetching medicines by ids:", error)
+    return []
   }
 }
