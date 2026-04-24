@@ -1,7 +1,9 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { sql } from "@/lib/db"
-import { ChildMedicine, Medicine, Patient, PatientRecord } from "./definitions"
+import { ChildMedicine, Medicine, MedicineChildMedicines, Patient, PatientRecord } from "./definitions"
 
 interface MedicationPayload {
   id: number
@@ -21,8 +23,8 @@ interface MedicinePayload {
   name: string
   description: string
   dose: string
-  childMedicines: number[]
-  [key: string]: string | number[] | number // fallback for other fields
+  childMedicines: MedicineChildMedicines[]
+  [key: string]: string | number[] | number | MedicineChildMedicines[] // fallback for other fields
 }
 
 export async function getMedicines() {
@@ -127,28 +129,30 @@ export async function deleteMedicationRecord(recordId: number): Promise<void> {
   }
 }
 
-export async function createMedicine(formData: FormData): Promise<void> {
+export async function createMedicine(childMedicines: MedicineChildMedicines[], formData: FormData): Promise<void> {
   try {
     const payload = {
       ...Object.fromEntries(formData.entries()),
-      childMedicines: formData.getAll("childMedicines").map(Number),
+      childMedicines,
     }
 
     const {
       name: name,
       description: description,
-      childMedicines: childMedicines,
       dose: dose,
     } = payload as MedicinePayload
 
     const result = await sql`INSERT INTO medicine (name, description, dose) 
       VALUES (${name}, ${description}, ${dose}) returning id`
     const medicineId = result[0]?.id
-    console.log(childMedicines)
-    childMedicines.forEach(async (childMedicineId) => {
-      await sql`INSERT INTO medicine_child_medicines (medicine_id, child_id, created_date) 
-      VALUES (${medicineId}, ${childMedicineId}, NOW())`
-    })
+
+    for (const childMedicine of childMedicines) {
+      await sql`INSERT INTO medicine_child_medicines (medicine_id, child_id, dose, created_date) 
+      VALUES (${medicineId}, ${childMedicine.child_id }, ${childMedicine.dose}, NOW())`
+    }
+
+    revalidatePath("/medicines")
+    redirect("/medicines")
   } catch (error) {
     console.error("Error creating medicine:", error)
   }
@@ -156,23 +160,26 @@ export async function createMedicine(formData: FormData): Promise<void> {
 
 export async function updateMedicine(
   id: number,
+  childMedicines: MedicineChildMedicines[],
   formData: FormData
 ): Promise<void> {
   try {
     const payload = {
       ...Object.fromEntries(formData.entries()),
-      childMedicines: formData.getAll("childMedicines").map(Number),
+      //childMedicines: formData.getAll("childMedicines").map(Number),
+      childMedicines,
     }
 
     const {
       name,
       description,
       dose,
-
+      childMedicines: payloadChildMedicines,
     } = payload as MedicinePayload
 
     console.log(`Updating medicine with id: ${id}`)
     console.log(`New values - Name: ${name}, Description: ${description}, Dose: ${dose}`) 
+    console.log(`Child medicines count: ${payloadChildMedicines.length}`)
     //await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
   } catch (error) {
     console.error("Error updating medicine:", error)
@@ -205,6 +212,16 @@ export async function getMedicinesByIds(ids: number[]): Promise<Medicine[]> {
     if (ids.length === 0) return []
     const rows = await sql`SELECT * FROM medicine WHERE id IN (${ids})`
     return rows as Medicine[]
+  } catch (error) {
+    console.error("Error fetching medicines by ids:", error)
+    return []
+  }
+}
+
+export async function getMedicineChildByParentId(id: number): Promise<MedicineChildMedicines[]> {
+  try {
+    const rows = await sql`SELECT * FROM medicine_child_medicines WHERE medicine_id = ${id}`
+    return rows as MedicineChildMedicines[]
   } catch (error) {
     console.error("Error fetching medicines by ids:", error)
     return []

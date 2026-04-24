@@ -28,6 +28,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -36,19 +37,26 @@ import {
   getMedicines,
   updateMedicine,
 } from "@/lib/actions"
-import { Medicine, Patient } from "@/lib/definitions"
+import { MedicationForm, Medicine, MedicineChildMedicines, MedicineWithChild, Patient } from "@/lib/definitions"
 import { format } from "date-fns"
 import { useRouter } from "next/navigation"
 import * as React from "react"
+import { Checkbox } from "../ui/checkbox"
+import { Plus } from "lucide-react"
+
+const doses = ["1/4", "1/3", "1/2", "1", "2", "3", "4"]
 
 export default function MedicineForm({
   medicine,
 }: {
-  medicine: Medicine | null
+  medicine: MedicationForm | null
 }) {
   const router = useRouter()
   const anchor = useComboboxAnchor()
   const [medicineList, setMedicineList] = React.useState<Medicine[]>([])
+  const [childMedicines, setChildMedicines] = React.useState<MedicineChildMedicines[]>(
+    medicine ? medicine.childMedicines : []
+  )
 
   React.useEffect(() => {
     getMedicines().then(setMedicineList)
@@ -75,9 +83,9 @@ export default function MedicineForm({
             id="create-medicine-form"
             action={async (formData) => {
               if (medicine) {
-                await updateMedicine(medicine.id, formData)
+                await updateMedicine(medicine.id, childMedicines, formData)
               } else {
-                await createMedicine(formData)
+                await createMedicine(childMedicines, formData)
               }
             }}
           >
@@ -127,7 +135,7 @@ export default function MedicineForm({
                   className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
-              <div className="grid gap-2">
+              {/*<div className="grid gap-2">
                 <label htmlFor="childMedicines">Content:</label>
                 <Combobox
                   multiple
@@ -152,7 +160,7 @@ export default function MedicineForm({
                     </ComboboxValue>
                   </ComboboxChips>
                   <ComboboxContent anchor={anchor}>
-                    <ComboboxEmpty>No time found.</ComboboxEmpty>
+                    <ComboboxEmpty>No medicine found.</ComboboxEmpty>
                     <ComboboxList>
                       {medicineList.map((medicine) => (
                         <ComboboxItem key={medicine.id} value={String(medicine.id)}>
@@ -162,6 +170,81 @@ export default function MedicineForm({
                     </ComboboxList>
                   </ComboboxContent>
                 </Combobox>
+              </div>*/}
+              <div className="flex items-center">
+                <p className="w-24 text-sm font-medium text-foreground">
+                  Contents:
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setChildMedicines((current) => [
+                      ...current,
+                      { child_id: 0, dose: "", } as MedicineChildMedicines,
+                    ])
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-2 grid grid-cols gap-2">
+                {childMedicines.map((child, index) => (
+                  <div
+                    key={index}
+                    className="grid md:w-fit grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3 rounded-md border border-border bg-background px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-primary md:grid-cols-[4.5rem_minmax(0,12rem)_3rem_minmax(0,12rem)]"
+                  >
+                    <span className="text-sm">Medicine:</span>
+                    <Select onValueChange={(value) => {
+                      const selectedMedicine = medicineList.find(med => String(med.id) === value)
+                      if (selectedMedicine) {
+                        const updatedChildMedicines = [...childMedicines]
+                        updatedChildMedicines[index] = {
+                          child_id: selectedMedicine.id,
+                          dose: updatedChildMedicines[index]?.dose || "",
+                        } as MedicineChildMedicines
+                        setChildMedicines(updatedChildMedicines)
+                      }
+                    }} value={childMedicines[index]?.child_id ? String(childMedicines[index].child_id) : ""}>
+                      <SelectTrigger className="w-full max-w-48">
+                        <SelectValue placeholder="Select a medicine" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Medicines</SelectLabel>
+                          {medicineList.map((medicine) => (
+                            <SelectItem key={medicine.id} value={String(medicine.id)}>
+                              {medicine.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+
+                    <span className="text-sm">Dose:</span>
+                    <Select onValueChange={(value) => {
+                      const updatedChildMedicines = [...childMedicines]
+                      updatedChildMedicines[index] = {
+                        child_id: updatedChildMedicines[index]?.child_id || 0,
+                        dose: value,
+                      } as MedicineChildMedicines
+                      setChildMedicines(updatedChildMedicines)
+                    }} value={childMedicines[index]?.dose || ""}>
+                      <SelectTrigger className="w-full max-w-48">
+                        <SelectValue placeholder="Select the dose" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Doses</SelectLabel>
+                          {doses.map((dose, doseIndex) => (
+                            <SelectItem key={doseIndex} value={dose}>{dose}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
               </div>
             </div>
           </form>
@@ -172,9 +255,6 @@ export default function MedicineForm({
               form="create-medicine-form"
               type="submit"
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:outline-none"
-              onClick={() => {
-                router.push("/medicines")
-              }}
             >
               Create Record
             </button>

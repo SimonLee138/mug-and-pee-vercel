@@ -46,3 +46,19 @@ export type DailyMedicationSchedule = {
   date: Date
   entries: Patient[]
 }
+
+export type MedicineWithChild = Medicine & {
+  childMedicines: Medicine[]
+}
+
+export type MedicineChildMedicines = {
+  id: number
+  medicine_id: number
+  child_id: number
+  dose: string
+  created_date: Date
+}
+
+export type MedicationForm = Medicine & {
+  childMedicines: MedicineChildMedicines[]
+}

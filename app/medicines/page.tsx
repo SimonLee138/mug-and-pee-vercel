@@ -10,7 +10,7 @@ export default async function Page() {
       (child) => child.parent_id === medicine.id
     ),
   }))
-  console.log("Medicines with children:", medicinesWithChildren)
+  
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 bg-background px-6 py-8">
       <section className="flex space-y-4 rounded-3xl border border-border bg-card/90 p-6 shadow-sm">

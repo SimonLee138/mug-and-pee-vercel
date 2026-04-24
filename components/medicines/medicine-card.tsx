@@ -9,17 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Medicine } from "@/lib/definitions"
-import { PencilLine, Plus } from "lucide-react"
+import { MedicineWithChild } from "@/lib/definitions"
+import { PencilLine, Plus, Trash } from "lucide-react"
 import Link from "next/link"
 import * as React from "react"
 import { Button } from "../ui/button"
 
-type MedicineCard = Medicine & {
-  childMedicines: Medicine[]
-}
-
-export default function MedicineCard({ medicines }: { medicines: MedicineCard[] }) {
+export default function MedicineCard({ medicines }: { medicines: MedicineWithChild[] }) {
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
@@ -43,13 +39,21 @@ export default function MedicineCard({ medicines }: { medicines: MedicineCard[] 
             <CardHeader>
               <CardTitle>{medicine.name}</CardTitle>
               <CardDescription>{medicine.description}</CardDescription>
-              <CardAction>
+              <CardAction className="flex gap-2">
                 <Link
                   href={`/medicines/${medicine.id}`}
                   className="text-sm hover:underline"
                 >
                   <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
                     <PencilLine className="h-4 w-4" />
+                  </div>
+                </Link>
+                <Link
+                  href={`/medicines/${medicine.id}`}
+                  className="text-sm hover:underline"
+                >
+                  <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
+                    <Trash className="h-4 w-4" />
                   </div>
                 </Link>
               </CardAction>
