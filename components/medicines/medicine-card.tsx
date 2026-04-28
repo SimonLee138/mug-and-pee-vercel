@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function MedicineCard({ medicines }: { medicines: MedicineWithChild[] }) {
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [openMedicineId, setOpenMedicineId] = React.useState<number | null>(null)
   const router = useRouter()
 
   return (
@@ -102,11 +102,16 @@ export default function MedicineCard({ medicines }: { medicines: MedicineWithChi
               </p>
               {medicine.childMedicines.length > 0 && (
                 <div className="grid gap-2">
-                  <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+                  <Collapsible
+                    open={openMedicineId === medicine.id}
+                    onOpenChange={(open) => {
+                      setOpenMedicineId(open ? medicine.id : null)
+                    }}
+                  >
                     <CollapsibleTrigger asChild>
                       <div className="flex items-center justify-between">
                         <Button variant="outline" className="w-full mt-2">
-                          {isOpen ? "Hide Contents" : "Show Contents"}
+                          {openMedicineId === medicine.id ? "Hide Contents" : "Show Contents"}
                         </Button>
                       </div>
                     </CollapsibleTrigger>
