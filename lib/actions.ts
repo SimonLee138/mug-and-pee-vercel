@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { refresh, revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { sql } from "@/lib/db"
 import { ChildMedicine, Medicine, MedicineChildMedicines, Patient, PatientRecord } from "./definitions"
@@ -188,7 +188,9 @@ export async function updateMedicine(
 
 export async function deleteMedicine(recordId: number): Promise<void> {
   try {
-    await sql`DELETE FROM medication_schedule WHERE id = ${recordId}`
+    await sql`DELETE FROM medicine WHERE id = ${recordId}`
+    await sql`DELETE FROM medicine_child_medicines WHERE medicine_id = ${recordId}`
+    refresh()
   } catch (error) {
     console.error("Error deleting medicine:", error)
   }

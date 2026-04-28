@@ -14,9 +14,23 @@ import { PencilLine, Plus, Trash } from "lucide-react"
 import Link from "next/link"
 import * as React from "react"
 import { Button } from "../ui/button"
+import { deleteMedicine } from "@/lib/actions"
+import { useRouter } from "next/navigation"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function MedicineCard({ medicines }: { medicines: MedicineWithChild[] }) {
   const [isOpen, setIsOpen] = React.useState(false)
+  const router = useRouter()
 
   return (
     <section className="flex flex-col gap-6">
@@ -48,14 +62,38 @@ export default function MedicineCard({ medicines }: { medicines: MedicineWithChi
                     <PencilLine className="h-4 w-4" />
                   </div>
                 </Link>
-                <Link
-                  href={`/medicines/${medicine.id}`}
-                  className="text-sm hover:underline"
-                >
-                  <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
-                    <Trash className="h-4 w-4" />
-                  </div>
-                </Link>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="text-sm hover:underline h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this medicine?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. The medicine and its child links will be removed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={async () => {
+                          await deleteMedicine(medicine.id)
+                          router.refresh()
+                        }}
+                        variant="destructive"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardAction>
             </CardHeader>
             <CardContent>

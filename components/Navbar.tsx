@@ -19,7 +19,7 @@ const navigationLinks = [
   { name: "Home", href: "/" },
   { name: "Medication Schedule", href: "/medications" },
   { name: "Medicines", href: "/medicines" },
-  { name: "Patients", href: "/patients" },
+  //{ name: "Patients", href: "/patients" },
 ]
 
 export default function Navbar() {
