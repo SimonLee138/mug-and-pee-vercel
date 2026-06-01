@@ -78,7 +78,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center space-x-4">
+        {/*<div className="hidden md:flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Sun className="h-4 w-4" />
             <Switch
@@ -91,7 +91,7 @@ export default function Navbar() {
             <Moon className="h-4 w-4" />
           </div>
           <Button size="sm">Download</Button>
-        </div>
+        </div>*/}
 
         {/* Mobile Menu Button */}
         <button
@@ -122,7 +122,7 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Actions */}
-            <div className="flex items-center justify-between pt-4 border-t">
+            {/*<div className="flex items-center justify-between pt-4 border-t">
               <div className="flex items-center space-x-2">
                 <Sun className="h-4 w-4" />
                 <Switch
@@ -135,7 +135,7 @@ export default function Navbar() {
                 <Moon className="h-4 w-4" />
               </div>
               <Button size="sm">Download</Button>
-            </div>
+            </div>*/}
           </div>
         </div>
       )}
