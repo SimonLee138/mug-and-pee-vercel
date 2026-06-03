@@ -256,7 +256,7 @@ export default function MedicineForm({
               type="submit"
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:outline-none"
             >
-              Create Record
+              { medicine ? "Update Record" : "Create Record" }
             </button>
             <button
               type="button"

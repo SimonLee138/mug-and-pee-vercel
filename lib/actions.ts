@@ -148,14 +148,14 @@ export async function createMedicine(childMedicines: MedicineChildMedicines[], f
 
     for (const childMedicine of childMedicines) {
       await sql`INSERT INTO medicine_child_medicines (medicine_id, child_id, dose, created_date) 
-      VALUES (${medicineId}, ${childMedicine.child_id }, ${childMedicine.dose}, NOW())`
+      VALUES (${medicineId}, ${childMedicine.child_id}, ${childMedicine.dose}, NOW())`
     }
-
-    revalidatePath("/medicines")
-    redirect("/medicines")
   } catch (error) {
     console.error("Error creating medicine:", error)
   }
+
+  revalidatePath("/medicines")
+  redirect("/medicines")
 }
 
 export async function updateMedicine(
@@ -178,12 +178,35 @@ export async function updateMedicine(
     } = payload as MedicinePayload
 
     console.log(`Updating medicine with id: ${id}`)
-    console.log(`New values - Name: ${name}, Description: ${description}, Dose: ${dose}`) 
+    console.log(`New values - Name: ${name}, Description: ${description}, Dose: ${dose}`)
     console.log(`Child medicines count: ${payloadChildMedicines.length}`)
-    //await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
+    await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
+
+    const normalizedChildMedicines = payloadChildMedicines
+      .filter((child) => Number(child.child_id) > 0)
+      .map((child) => ({
+        child_id: Number(child.child_id),
+        dose: String(child.dose ?? ""),
+      }))
+
+    const uniqueByChildId = Array.from(
+      new Map(
+        normalizedChildMedicines.map((child) => [child.child_id, child])
+      ).values()
+    )
+
+    await sql`DELETE FROM medicine_child_medicines WHERE medicine_id = ${id}`
+
+    for (const childMedicine of uniqueByChildId) {
+      await sql`INSERT INTO medicine_child_medicines (medicine_id, child_id, dose, created_date)
+      VALUES (${id}, ${childMedicine.child_id}, ${childMedicine.dose}, NOW())`
+    }
   } catch (error) {
     console.error("Error updating medicine:", error)
   }
+
+  revalidatePath("/medicines")
+  redirect("/medicines")
 }
 
 export async function deleteMedicine(recordId: number): Promise<void> {
