@@ -17,7 +17,7 @@ export default function Page() {
                 Medication schedules, made simple.
               </h1>
               <p className="max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-                Keep your cats’ medicines organized and today’s doses easy to
+                Keep cats’ medicines organized and today’s doses easy to
                 check off, all in one place.
               </p>
             </div>
@@ -50,7 +50,7 @@ export default function Page() {
               </span>
               <span>
                 <span className="block font-semibold text-foreground">Medicine cabinet</span>
-                <span className="mt-1 block text-sm text-muted-foreground">Review your medicine list and contents</span>
+                <span className="mt-1 block text-sm text-muted-foreground">Review the medicine list and contents</span>
               </span>
             </div>
             <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
@@ -60,8 +60,8 @@ export default function Page() {
             className="group flex min-h-32 items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/40 hover:shadow-md sm:p-6"
           >
             <span>
-              <span className="block font-semibold text-foreground">Meet the cats</span>
-              <span className="mt-1 block text-sm text-muted-foreground">A little page for the patients behind the schedule</span>
+              <span className="block font-semibold text-foreground">My cats</span>
+              <span className="mt-1 block text-sm text-muted-foreground">A little page for my cats behind the schedule</span>
             </span>
             <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
           </Link>

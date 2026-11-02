@@ -4,12 +4,12 @@ const cats = [
   {
     name: "Muggle",
     image: "/muggle.JPEG",
-    description: "One of the very important patients behind this care tracker.",
+    description: "The handsome one. Hope him become healthy.",
   },
   {
     name: "Peeves",
     image: "/peeves.JPEG",
-    description: "A beloved member of the family, and a good reason to stay organized.",
+    description: "Second son. Cutest, gluttony.",
   },
 ]
 
@@ -19,10 +19,10 @@ export default function CatsPage() {
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
         <header className="space-y-3">
           <p className="text-xs font-semibold tracking-[0.24em] text-primary uppercase sm:text-sm">
-            The patients
+            The treasures
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Meet the cats
+            My cats
           </h1>
           <p className="max-w-2xl text-base leading-7 text-muted-foreground">
             The best part of keeping their care on schedule.
