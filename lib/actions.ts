@@ -82,8 +82,9 @@ export async function getPatientRecords(selectedDate?: string) {
 }
 
 export async function createMedicationRecord(
+  _previousState: { error: string },
   formData: FormData
-): Promise<void> {
+): Promise<{ error: string }> {
   const patientId = Number(formData.get("patient_id"))
   const medicineId = Number(formData.get("medicine_id"))
   const dose = String(formData.get("dose") ?? "").trim()
@@ -111,10 +112,25 @@ export async function createMedicationRecord(
     timeslots.length === 0 || timeslots.some((time) => !validTimes.has(time)) ||
     new Set(timeslots).size !== timeslots.length
   ) {
-    throw new Error("Please complete the medication form with valid values.")
+    return {
+      error: "Check the form: complete every field, enter a positive whole-number quantity, choose valid dates, and select at least one unique time.",
+    }
   }
 
   try {
+    const references = (await sql`
+      SELECT
+        EXISTS (SELECT 1 FROM patient WHERE id = ${patientId}) AS patient_exists,
+        EXISTS (SELECT 1 FROM medicine WHERE id = ${medicineId}) AS medicine_exists
+    `) as { patient_exists: boolean; medicine_exists: boolean }[]
+
+    if (!references[0]?.patient_exists) {
+      return { error: "The selected patient could not be found. Please choose a patient again." }
+    }
+    if (!references[0]?.medicine_exists) {
+      return { error: "The selected medicine could not be found. Please choose a medicine again." }
+    }
+
     await sql.transaction(
       timeslots.map(
         (time) => sql`
@@ -127,7 +143,7 @@ export async function createMedicationRecord(
     )
   } catch (error) {
     console.error("Error creating medication record:", error)
-    throw new Error("Could not save the medication record. Please try again.")
+    return { error: "Could not save the medication record. Please try again." }
   }
 
   revalidatePath("/medications")
