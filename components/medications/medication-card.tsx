@@ -2,9 +2,7 @@
 
 import {
   Calendar as CalendarIcon,
-  PencilLine,
   Plus,
-  Trash2,
 } from "lucide-react"
 import Link from "next/link"
 import {
@@ -40,98 +38,56 @@ export default function MedicationCard({
   }
 
   return (
-    <div>
-      <div className="mb-2 flex justify-between">
-        <div className="flex h-fit w-fit flex-none gap-2 rounded-3xl border border-border bg-card/90 shadow-sm md:hidden">
-          <Popover open={mobileDateOpen} onOpenChange={setMobileDateOpen}>
+    <section className="rounded-3xl border border-border bg-card/90 p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold tracking-[0.24em] text-primary uppercase sm:text-sm">
+            Daily medication tracker
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Patient medicine schedule
+          </h1>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+          <Popover
+            open={mobileDateOpen || desktopDateOpen}
+            onOpenChange={(open) => {
+              setMobileDateOpen(open)
+              setDesktopDateOpen(open)
+            }}
+          >
             <PopoverTrigger asChild>
               <Button
-                id="date"
                 type="button"
                 variant="outline"
-                size="icon"
+                className="w-full sm:w-auto"
                 aria-label={`Choose schedule date, currently ${format(date ?? new Date(), "PPP")}`}
               >
-                <CalendarIcon className="h-6 w-6" />
+                <CalendarIcon aria-hidden="true" />
+                <span>{format(date ?? new Date(), "PP")}</span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent>
+            <PopoverContent align="end" className="w-auto p-0">
               <Calendar
                 mode="single"
                 selected={date}
                 onSelect={(nextDate) => {
                   changeDate(nextDate)
                   setMobileDateOpen(false)
+                  setDesktopDateOpen(false)
                 }}
                 defaultMonth={date}
               />
             </PopoverContent>
           </Popover>
-        </div>
-        <div className="flex h-fit w-fit flex-none gap-2 rounded-3xl border border-border bg-card/90 p-3 shadow-sm md:hidden">
-          <Link
-            href="/medications/create"
-          >
-            <Plus className="h-6 w-6" />
-          </Link>
-          <PencilLine className="h-6 w-6" />
-          <Trash2 className="h-6 w-6" />
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/medications/create">
+              <Plus aria-hidden="true" />
+              Add record
+            </Link>
+          </Button>
         </div>
       </div>
-
-      <section className="flex space-y-4 rounded-3xl border border-border bg-card/90 p-6 shadow-sm">
-        <div className="flex grow flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium tracking-[0.3em] text-muted-foreground uppercase">
-              Daily medication tracker
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              Patient medicine schedule
-            </h1>
-          </div>
-        </div>
-        <div className="hidden flex-none gap-2 md:flex">
-          <div>
-            <Popover open={desktopDateOpen} onOpenChange={setDesktopDateOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  id="dateFrom"
-                  type="button"
-                  variant="outline"
-                  className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
-                  aria-label={`Choose schedule date, currently ${format(date ?? new Date(), "PPP")}`}
-                >
-                  <CalendarIcon id="date" />
-                  <span>{format(date ?? new Date(), "PP")}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(nextDate) => {
-                    changeDate(nextDate)
-                    setDesktopDateOpen(false)
-                  }}
-                  defaultMonth={date}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <Link
-            href="/medications/create"
-            className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-          </Link>
-          <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
-            <PencilLine className="h-4 w-4" />
-          </div>
-          <div className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm">
-            <Trash2 className="h-4 w-4" />
-          </div>
-        </div>
-      </section>
-    </div>
+    </section>
   )
 }

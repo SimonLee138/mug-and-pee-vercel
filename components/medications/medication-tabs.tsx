@@ -6,6 +6,7 @@ import { PatientRecord, TimeLabel } from "@/lib/definitions"
 import { Pill } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { updateMedicationCount } from "@/lib/actions"
+import { format, isToday, parseISO } from "date-fns"
 import { useState } from "react"
 
 type PatientTabRecord = {
@@ -50,12 +51,18 @@ function timeLabelClass(time: TimeLabel) {
 
 export default function MedicationTabs({
   patientRecords,
+  selectedDate,
 }: {
   patientRecords: PatientRecord[]
+  selectedDate: string
 }) {
   const [takenCounts, setTakenCounts] = useState<Record<number, number>>({})
   const [pendingRecords, setPendingRecords] = useState<Record<number, boolean>>({})
   const [failedRecords, setFailedRecords] = useState<Record<number, boolean>>({})
+  const parsedSelectedDate = parseISO(selectedDate)
+  const scheduleSummary = isToday(parsedSelectedDate)
+    ? "Today's medication schedule."
+    : `Medication schedule for ${format(parsedSelectedDate, "MMMM d, yyyy")}.`
 
   const updateTakenCount = async (recordId: number, delta: number) => {
     setPendingRecords((previous) => ({ ...previous, [recordId]: true }))
@@ -82,7 +89,7 @@ export default function MedicationTabs({
           id: record.patient_id,
           name: record.patient_name,
           description: "",
-          summary: "Today's medication schedule.",
+          summary: scheduleSummary,
           medicines: [],
         }
       }

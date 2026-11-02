@@ -77,8 +77,7 @@ export default function Page() {
           <CardHeader>
             <CardTitle>Create Medication Record </CardTitle>
             <CardDescription>
-              Form for creating a new medication record will be implemented
-              here.
+              Choose a patient, medicine, schedule, and dose details.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -212,8 +211,8 @@ export default function Page() {
                     className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
-                <div className="flex w-full gap-4">
-                  <div className="grid gap-2 flex-1">
+                <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
                     <label
                       htmlFor="quantity"
                       className="w-24 text-sm font-medium text-foreground"
@@ -227,7 +226,7 @@ export default function Page() {
                       className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
                     />
                   </div>
-                  <div className="grid gap-2 flex-1">
+                  <div className="grid gap-2">
                     <label
                       htmlFor="quantity_unit"
                       className="w-24 text-sm font-medium text-foreground"

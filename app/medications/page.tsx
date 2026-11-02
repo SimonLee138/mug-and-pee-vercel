@@ -22,7 +22,7 @@ export default async function Page({
     <div className="min-h-screen bg-background px-6 py-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <MedicationCard selectedDate={selectedDate} />
-        <MedicationTabs patientRecords={patientRecords} />
+        <MedicationTabs patientRecords={patientRecords} selectedDate={selectedDate} />
       </div>
     </div>
   )
