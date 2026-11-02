@@ -182,7 +182,19 @@ export async function createMedicine(childMedicines: MedicineChildMedicines[], f
       VALUES (${name}, ${description}, ${dose}) returning id`
     const medicineId = result[0]?.id
 
-    for (const childMedicine of childMedicines) {
+    const validChildMedicines = childMedicines
+      .filter(
+        (child) =>
+          Number.isInteger(Number(child.child_id)) &&
+          Number(child.child_id) > 0 &&
+          String(child.dose ?? "").trim().length > 0
+      )
+      .filter((child, index, children) =>
+        children.findIndex((candidate) => candidate.child_id === child.child_id) === index
+      )
+      .filter((child) => child.child_id !== Number(medicineId))
+
+    for (const childMedicine of validChildMedicines) {
       await sql`INSERT INTO medicine_child_medicines (medicine_id, child_id, dose, created_date) 
       VALUES (${medicineId}, ${childMedicine.child_id}, ${childMedicine.dose}, NOW())`
     }
@@ -219,7 +231,12 @@ export async function updateMedicine(
     await sql`UPDATE medicine SET name = ${name}, description = ${description}, dose = ${dose} WHERE id = ${id}`
 
     const normalizedChildMedicines = payloadChildMedicines
-      .filter((child) => Number(child.child_id) > 0)
+      .filter(
+        (child) =>
+          Number(child.child_id) > 0 &&
+          Number(child.child_id) !== id &&
+          String(child.dose ?? "").trim().length > 0
+      )
       .map((child) => ({
         child_id: Number(child.child_id),
         dose: String(child.dose ?? ""),
