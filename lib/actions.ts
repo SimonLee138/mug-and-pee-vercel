@@ -5,19 +5,6 @@ import { redirect } from "next/navigation"
 import { sql } from "@/lib/db"
 import { ChildMedicine, Medicine, MedicineChildMedicines, Patient, PatientRecord } from "./definitions"
 
-interface MedicationPayload {
-  id: number
-  patient_id: number
-  medicine_id: number
-  date_from: string
-  date_to: string
-  dose: string
-  quantity: number
-  quantity_unit: string
-  timeComboBox: string[]
-  [key: string]: string | string[] | number // fallback for other fields
-}
-
 interface MedicinePayload {
   id: number
   name: string
@@ -83,30 +70,54 @@ export async function getPatientRecords() {
 export async function createMedicationRecord(
   formData: FormData
 ): Promise<void> {
+  const patientId = Number(formData.get("patient_id"))
+  const medicineId = Number(formData.get("medicine_id"))
+  const dose = String(formData.get("dose") ?? "").trim()
+  const quantity = Number(formData.get("quantity"))
+  const quantityUnit = String(formData.get("quantity_unit") ?? "").trim()
+  const startDate = String(formData.get("date_from") ?? "")
+  const endDate = String(formData.get("date_to") ?? "")
+  const validTimes = new Set(["Morning", "Evening", "All Day"])
+  const timeslots = formData
+    .getAll("timeComboBox")
+    .filter((time): time is string => typeof time === "string")
+
+  const isValidDate = (value: string) => {
+    const date = new Date(`${value}T00:00:00.000Z`)
+    return /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      !Number.isNaN(date.getTime()) &&
+      date.toISOString().slice(0, 10) === value
+  }
+
+  if (
+    !Number.isInteger(patientId) || patientId <= 0 ||
+    !Number.isInteger(medicineId) || medicineId <= 0 ||
+    !dose || !Number.isInteger(quantity) || quantity <= 0 || !quantityUnit ||
+    !isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate ||
+    timeslots.length === 0 || timeslots.some((time) => !validTimes.has(time)) ||
+    new Set(timeslots).size !== timeslots.length
+  ) {
+    throw new Error("Please complete the medication form with valid values.")
+  }
+
   try {
-    const payload = {
-      ...Object.fromEntries(formData.entries()),
-      timeComboBox: formData.getAll("timeComboBox"),
-    }
-
-    const {
-      patient_id: patient_id,
-      medicine_id: medicine_id,
-      timeComboBox: timeslots,
-      dose: dose,
-      quantity: quantity,
-      quantity_unit: quantity_unit,
-      date_from: start_date,
-      date_to: end_date,
-    } = payload as MedicationPayload
-
-    timeslots.forEach(async (time) => {
-      await sql`INSERT INTO medication_schedule (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date) 
-      VALUES (${patient_id}, ${medicine_id}, ${time}, ${dose}, ${quantity}, ${quantity_unit}, ${start_date}, ${end_date})`
-    })
+    await sql.transaction(
+      timeslots.map(
+        (time) => sql`
+          INSERT INTO medication_schedule
+            (patient_id, medicine_id, time_label, dose, quantity, quantity_unit, start_date, end_date)
+          VALUES
+            (${patientId}, ${medicineId}, ${time}, ${dose}, ${quantity}, ${quantityUnit}, ${startDate}, ${endDate})
+        `
+      )
+    )
   } catch (error) {
     console.error("Error creating medication record:", error)
+    throw new Error("Could not save the medication record. Please try again.")
   }
+
+  revalidatePath("/medications")
+  redirect("/medications")
 }
 
 export async function updateMedicationCount(
