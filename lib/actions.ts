@@ -45,15 +45,29 @@ export async function getPatients() {
   }
 }
 
-export async function getPatientRecords() {
+export async function getCurrentScheduleDate(): Promise<string> {
   try {
+    const rows = (await sql`SELECT CURRENT_DATE::text AS date`) as {
+      date: string
+    }[]
+    return rows[0]?.date ?? new Date().toISOString().slice(0, 10)
+  } catch (error) {
+    console.error("Error fetching current schedule date:", error)
+    return new Date().toISOString().slice(0, 10)
+  }
+}
+
+export async function getPatientRecords(selectedDate?: string) {
+  try {
+    const scheduleDate = selectedDate ?? null
     const rows =
       (await sql`select ms.id as id, p.id as patient_id, p.name as patient_name, m.id as medicine_id, m.name as medicine_name, 
       ms.time_label as time, ms.dose as dose, ms.quantity as quantity, ms.quantity_unit as quantity_unit, ms.taken_times as taken_times 
       from medication_schedule ms 
       join medicine m on ms.medicine_id = m.id
       join patient p on ms.patient_id = p.id
-      where start_date <= CURRENT_DATE and end_date >= CURRENT_DATE order by 
+      where start_date <= COALESCE(${scheduleDate}::date, CURRENT_DATE)
+        and end_date >= COALESCE(${scheduleDate}::date, CURRENT_DATE) order by 
       case
         when ms.time_label = 'All Day' then 1
         when ms.time_label = 'Morning' then 2

@@ -15,11 +15,29 @@ import {
 import * as React from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "../ui/button"
+import { format, parseISO } from "date-fns"
+import { useRouter } from "next/navigation"
 
-export default function MedicationCard() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
+export default function MedicationCard({
+  selectedDate,
+}: {
+  selectedDate: string
+}) {
+  const router = useRouter()
+  const [date, setDate] = React.useState<Date | undefined>(parseISO(selectedDate))
   const [mobileDateOpen, setMobileDateOpen] = React.useState(false)
   const [desktopDateOpen, setDesktopDateOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    setDate(parseISO(selectedDate))
+  }, [selectedDate])
+
+  const changeDate = (nextDate: Date | undefined) => {
+    if (!nextDate) return
+
+    setDate(nextDate)
+    router.push(`/medications?date=${format(nextDate, "yyyy-MM-dd")}`)
+  }
 
   return (
     <div>
@@ -27,7 +45,13 @@ export default function MedicationCard() {
         <div className="flex h-fit w-fit flex-none gap-2 rounded-3xl border border-border bg-card/90 shadow-sm md:hidden">
           <Popover open={mobileDateOpen} onOpenChange={setMobileDateOpen}>
             <PopoverTrigger asChild>
-              <Button id="date" type="button" variant="outline" size="icon">
+              <Button
+                id="date"
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label={`Choose schedule date, currently ${format(date ?? new Date(), "PPP")}`}
+              >
                 <CalendarIcon className="h-6 w-6" />
               </Button>
             </PopoverTrigger>
@@ -35,8 +59,8 @@ export default function MedicationCard() {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(date) => {
-                  setDate(date)
+                onSelect={(nextDate) => {
+                  changeDate(nextDate)
                   setMobileDateOpen(false)
                 }}
                 defaultMonth={date}
@@ -75,16 +99,18 @@ export default function MedicationCard() {
                   type="button"
                   variant="outline"
                   className="h-fit w-fit rounded-3xl border border-border bg-card/90 p-3 shadow-sm"
+                  aria-label={`Choose schedule date, currently ${format(date ?? new Date(), "PPP")}`}
                 >
                   <CalendarIcon id="date" />
+                  <span>{format(date ?? new Date(), "PP")}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent>
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(date) => {
-                    setDate(date)
+                  onSelect={(nextDate) => {
+                    changeDate(nextDate)
                     setDesktopDateOpen(false)
                   }}
                   defaultMonth={date}
