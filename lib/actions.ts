@@ -136,14 +136,25 @@ export async function createMedicationRecord(
 
 export async function updateMedicationCount(
   recordId: number,
-  newCount: number
-): Promise<void> {
-  try {
-    console.log(`Updating record ${recordId} with new count: ${newCount}`)
-    await sql`UPDATE medication_schedule SET taken_times = ${newCount} WHERE id = ${recordId}`
-  } catch (error) {
-    console.error("Error updating medication count:", error)
+  delta: number
+): Promise<number> {
+  if (!Number.isInteger(recordId) || recordId <= 0 || ![-1, 1].includes(delta)) {
+    throw new Error("Invalid medication dose update.")
   }
+
+  const rows = await sql`
+    UPDATE medication_schedule
+    SET taken_times = GREATEST(0, LEAST(quantity, COALESCE(taken_times, 0) + ${delta}))
+    WHERE id = ${recordId}
+    RETURNING taken_times
+  `
+
+  if (!rows[0]) {
+    throw new Error("Medication record was not found.")
+  }
+
+  revalidatePath("/medications")
+  return Number(rows[0].taken_times)
 }
 
 export async function deleteMedicationRecord(recordId: number): Promise<void> {
